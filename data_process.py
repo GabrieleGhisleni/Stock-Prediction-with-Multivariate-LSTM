@@ -1,17 +1,19 @@
 from sklearn.preprocessing import StandardScaler
+import pandas as pd
 import numpy as np
 
 class DataPreProcess:
     def __init__(self, scaler = StandardScaler, timesteps: int = 20):
         self.scaler = scaler()
+        self.scaler_target = scaler()
         self.scaler_trained = False
         self.timesteps = timesteps
     
-    def scale(self, data, scaler = StandardScaler) -> pd.DataFrame:
+    def scale(self, data, target, timestamp, scaler = StandardScaler) -> pd.DataFrame:
         self.scaler_trained = True
-        res =  pd.DataFrame(self.scaler.fit_transform(data.iloc[:,1:]),
-                            columns = data.iloc[:,1:].columns)
-        res['Date'] = data.Date
+        res =  pd.DataFrame(self.scaler.fit_transform(data), columns = data.columns)
+        res.loc[:, ['Close']] = self.scaler_target.fit_transform(target.values.reshape(-1,1))
+        res['Date'] = timestamp
         return res
 
     def create_windows(self, data, col_x, col_y):

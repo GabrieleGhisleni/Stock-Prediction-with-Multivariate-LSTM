@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import yfinance as yf
 import seaborn as sns
 import pandas as pd
