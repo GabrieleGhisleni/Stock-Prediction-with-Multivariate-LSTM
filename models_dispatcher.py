@@ -1,13 +1,28 @@
-from tensorflow.keras.layers import LSTM, Dense, ConvLSTM2D, Bidirectional, Input, Flatten
+from tensorflow.keras.layers import LSTM, Dense, Bidirectional, Input, Flatten
 from tensorflow.keras.models import Sequential
-
+from models_wrap import ModelsHandler
 
 class ModelsDispatch(ModelsHandler):
+    """
+    Models dispatch, see the evaluation on the test to understand which models
+    performs better.
+    """
     def __init__(self, batch_size):
         super().__init__(batch_size)
 
-    def vanilla_LSTM(self, input_shape):
-        self.name = "Vanilla_LSTM_50"
+
+    def light_dense_vanilla_LSTM(self, input_shape, name= "light_dense_vanilla_LSTM"):
+        self.name = name
+        return  Sequential([
+                    Input(shape=input_shape, name='lstm_input'),
+                    LSTM(units=200, name='Vanilla_LSTM', batch_size=self.batch_size),
+                    Dense(units=10, activation='lr'),
+                    Dense(units=1),
+                    ])
+
+
+    def vanilla_LSTM(self, input_shape, name= "Vanilla_LSTM_50"):
+        self.name = name
         return  Sequential([
                     Input(shape=input_shape, name='lstm_input'),
                     LSTM(units=50, name='Vanilla_LSTM', batch_size=self.batch_size),
@@ -15,8 +30,9 @@ class ModelsDispatch(ModelsHandler):
                     Dense(units=1),
                     ])
         
-    def stacked_LSTM(self, input_shape):
-        self.name = "stacked_LSTM"
+
+    def stacked_LSTM(self, input_shape, name="stacked_LSTM"):
+        self.name = name
         return Sequential([
                     Input(shape=input_shape, name='lstm_input'),
                     LSTM(units=50, name='stacked_LSTM', return_sequences=True, batch_size=self.batch_size),
@@ -24,8 +40,9 @@ class ModelsDispatch(ModelsHandler):
                     Dense(units=1),
                     ])
         
-    def bidirectional_LSTM(self, input_shape):
-        self.name = "bidirectional_LSTM"
+
+    def bidirectional_LSTM(self, input_shape, name="bidirectional_LSTM"):
+        self.name = name
         return Sequential([
                     Input(shape=input_shape, name='lstm_input'),
                     Bidirectional(LSTM(units=50, name='bidirectional_LSTM', batch_size=self.batch_size)),

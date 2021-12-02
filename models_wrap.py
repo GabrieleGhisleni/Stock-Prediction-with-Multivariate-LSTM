@@ -13,9 +13,11 @@ class ModelsHandler:
     def __init__(self, batch_size):
         self.batch_size = batch_size
 
+
     def save_model_and_score(self, model, X_test, y_test, target_scalar, ticket, path='./models/'):
         loss, mse, mae = model.evaluate(X_test, y_test, verbose=0)
         direction_score, score_df = self.check_direction(model, X_test, y_test, target_scalar)
+        print(f"% Direction correct={direction_score['correct']}, mse_test_mean={direction_score['scores']['mean']}")
         path_folder = f"{path}/{ticket}"
         path_result = f"{path_folder}/result.json"
         path_model = f"{path_folder}/{self.name}.json"
@@ -31,8 +33,10 @@ class ModelsHandler:
         model.save(path_model)
         return direction_score, score_df
 
+
     def check_direction(self, model, X_test, y_test, target_scalar):
       res = dict()
+      preds = model.predict(X_test)
       for itruth in range(len(X_test)-1):
         truth_today = target_scalar.inverse_transform(y_test[itruth].reshape(-1, 1))
         truth_tomorrow = target_scalar.inverse_transform(y_test[itruth+1].reshape(-1, 1))
@@ -48,19 +52,40 @@ class ModelsHandler:
       res = pd.DataFrame(res).T
       return {'correct': res.correct.mean(), 'scores': res.mse.astype('float64').describe().to_dict()}, res
 
+
     def plot_history_model(self, history_model):
          plot_obj = tfdocs.plots.HistoryPlotter(smoothing_std=2)
          fig, axes = plt.subplots(1,1,figsize=(15,5))
          plot_obj.plot({f'{self.name} ': history_model}, metric = "mean_squared_error")
+
 
     def draw_model(self, model, ticket):
       path_folder = f"models/{ticket}"
       if not os.path.exists(path_folder): os.mkdir(path_folder)
       return tf.keras.utils.plot_model(model, show_shapes=True, to_file=f"models/{ticket}/{self.name}.png")
 
+
     def load_model(self, ticket, name):
       self.name = name
       return tf.keras.models.load_model(f'models/{ticket}/{name}.json')
+
+
+    @staticmethod
+    def compare_eval(ticket):
+      def unroll_scores(scores):
+        res = [scores['correct']]
+        res.append(scores['scores']['mean'])
+        res.append(scores['scores']['std'])
+        return res
+
+      with open(f"models/{ticket}/result.json", 'r') as f: 
+        _store = json.load(f)
+        store = pd.DataFrame(_store).T
+        col_names = ['correct_dir','mse_mean_test', 'mse_std_test']
+        unrolled = pd.DataFrame(store.scores.apply(unroll_scores).values.tolist(), columns=col_names)
+        res = pd.concat([store.iloc[:, :-1].reset_index(), unrolled], axis=1)
+        res.rename(columns=dict(index='model'))
+        return res
 
     @staticmethod
     def plot_test_pred(model, X, y, target_scalar):
@@ -71,7 +96,8 @@ class ModelsHandler:
       days = [i for i in range(len(prediction))]
       sns.lineplot(y=inverse_scalar_pred.flat, x=days, ax=axes, label = 'predicted', linewidth=1.5)
       sns.lineplot(y=inverse_target.flat, x=days, ax=axes, color='red', linewidth=1.2, label = 'real')
-      for d in days: plt.axvline(d, 0, alpha=0.3, color='black')
+      if len(days) < 150:
+        for d in days: plt.axvline(d, 0, alpha=0.3, color='black')
       plt.xlim(-1, len(days))
       plt.ylim(np.min(inverse_scalar_pred)-30, np.max(inverse_target)+30)
       plt.legend()
