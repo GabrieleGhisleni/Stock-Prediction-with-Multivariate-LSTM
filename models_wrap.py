@@ -88,7 +88,7 @@ class ModelsHandler:
         return res
 
     @staticmethod
-    def plot_test_pred(model, X, y, target_scalar):
+    def plot_test_pred(model, X, y, target_scalar, H=None):
       fig,axes= plt.subplots(1,1,figsize=(20,15))
       prediction = model.predict(X)
       inverse_scalar_pred = target_scalar.inverse_transform(prediction.reshape(-1,1))
@@ -97,7 +97,8 @@ class ModelsHandler:
       sns.lineplot(y=inverse_scalar_pred.flat, x=days, ax=axes, label = 'predicted', linewidth=1.5)
       sns.lineplot(y=inverse_target.flat, x=days, ax=axes, color='red', linewidth=1.2, label = 'real')
       if len(days) < 150:
-        for d in days: plt.axvline(d, 0, alpha=0.3, color='black')
+         for d in days: plt.axvline(d, 0, alpha=0.3, color='black')
+      if H: plt.axvline(days[-H], 0, alpha=1, color='purple', linewidth=2)
       plt.xlim(-1, len(days))
       plt.ylim(np.min(inverse_scalar_pred)-30, np.max(inverse_target)+30)
       plt.legend()
