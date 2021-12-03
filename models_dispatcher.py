@@ -15,22 +15,12 @@ class ModelsDispatch(ModelsHandler):
         self.name = name
         return  Sequential([
                     Input(shape=input_shape, name='lstm_input'),
-                    LSTM(units=200, name='Vanilla_LSTM', batch_size=self.batch_size),
+                    LSTM(units=205, name='Vanilla_LSTM', batch_size=self.batch_size),
                     Dense(units=10, activation='leaky_relu'),
                     Dense(units=1),
                     ])
 
-    def light_dense_vanilla_LSTM_softmax(self, input_shape, name= "light_dense_vanilla_LSTM_softmax"):
-        self.name = name
-        return  Sequential([
-                    Input(shape=input_shape, name='lstm_input'),
-                    LSTM(units=200, name='Vanilla_LSTM', batch_size=self.batch_size),
-                    Dense(units=20, activation='softmax'),
-                    Dense(units=10, activation='softmax'),
-                    Dense(units=1),
-                    ])
-        
-
+    
     def stacked_LSTM(self, input_shape, name="stacked_LSTM"):
         self.name = name
         return Sequential([

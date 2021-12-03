@@ -84,8 +84,9 @@ class ModelsHandler:
         col_names = ['correct_dir','mse_mean_test', 'mse_std_test']
         unrolled = pd.DataFrame(store.scores.apply(unroll_scores).values.tolist(), columns=col_names)
         res = pd.concat([store.iloc[:, :-1].reset_index(), unrolled], axis=1)
-        res.rename(columns=dict(index='model'))
-        return res
+        res.rename(columns={'index':'model'}, inplace=True)
+        return res.sort_values('mse_mean_test')
+
 
     @staticmethod
     def plot_test_pred(model, X, y, target_scalar, H=None):
@@ -94,8 +95,8 @@ class ModelsHandler:
       inverse_scalar_pred = target_scalar.inverse_transform(prediction.reshape(-1,1))
       inverse_target = target_scalar.inverse_transform(y.reshape(-1,1))
       days = [i for i in range(len(prediction))]
-      sns.lineplot(y=inverse_scalar_pred.flat, x=days, ax=axes, label = 'predicted', linewidth=1.5)
-      sns.lineplot(y=inverse_target.flat, x=days, ax=axes, color='red', linewidth=1.2, label = 'real')
+      sns.lineplot(y=inverse_scalar_pred.flat, x=days, ax=axes, label = 'predicted', linewidth=4)
+      sns.lineplot(y=inverse_target.flat, x=days, ax=axes, color='red', linewidth=1.5, label = 'real')
       if len(days) < 150:
          for d in days: plt.axvline(d, 0, alpha=0.3, color='black')
       if H: plt.axvline(days[-H], 0, alpha=1, color='purple', linewidth=2)

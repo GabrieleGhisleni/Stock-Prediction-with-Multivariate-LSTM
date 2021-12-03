@@ -19,8 +19,11 @@ class FinanceFetch:
 
     def plot_flow(self, year: str = "2021") -> None:
         fig,axes = plt.subplots(1,1, figsize=(20,10))
-        sns.lineplot(data=self.history.loc[self.history.Date > "2021"], y='Open', x='Date', ax = axes, color='firebrick')
-        sns.lineplot(data=self.history.loc[self.history.Date > "2021"] , y='Close', x='Date', ax = axes)
+        if year != 'all': data = self.history.loc[self.history.Date > year] 
+        else:  data = self.history
+        sns.lineplot(data=data, y='Open', x='Date', ax = axes, color='firebrick', label='Open')
+        sns.lineplot(data=data , y='Close', x='Date', ax = axes, label='Close')
+        plt.legend()
         plt.title(f"Flow of {self.ticket_name} in {year}")
         plt.show()
 
